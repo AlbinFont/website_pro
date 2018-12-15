@@ -2,10 +2,10 @@
 # Recent Posts widget.
 # This widget displays recent posts from `content/post/`.
 widget = "posts"
-active = false
-date = 2016-04-20T00:00:00
+active = true
+date = 2018-12-05T00:00:00
 
-title = "Recent Posts"
+title = "Behind the papers: Tutorials"
 subtitle = ""
 
 # Order that this section will appear in.
@@ -26,4 +26,3 @@ count = 5
 #   2 = Stream
 list_format = 2
 +++
-

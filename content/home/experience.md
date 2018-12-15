@@ -41,7 +41,7 @@ date_format = "January 2006"
   location = "Institut Pasteur, Paris, France"
   date_start = "2012-01-01"
   date_end = "2016-08-15"
-  description = """Quantitative genetic and genomic work on the Aedes aegypti mosquito, the main vector of dengue or zika virus."""
+  description = """Quantitative genetic and genomic work on the Aedes aegypti mosquito, the main vector of dengue or zika virus. I also worked on intra-host infection dynamic."""
   
 [[experience]]
   title = "Doctoral researcher"

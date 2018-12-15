@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 3.1.1">
+  <meta name="generator" content="Hugo 0.51" />
+  <meta name="author" content="Albin Fontaine, PhD">
+
+  
+  
+  
+  
+    
+  
+  <meta name="description" content="Background A mysterious disease has emerged on planet Naboo. Both infected humans and other extra-terrestrial life forms experience fever, severe headaches, skin rash and mild bleeding symptoms. The FIRST ORDER has sent health experts in the area. They identified the causing agent as being a vector-borne virus transmitted by an autochthonous mosquito species. Estimating the virus incubation period in vertebrate hosts would help to determine the duration of the containment measure to control the outbreak.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/">
+
+  
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#2962ff">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" crossorigin="anonymous">
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Montserrat:400,700|Roboto:400,400italic,700|Roboto+Mono">
+  
+
+  <link rel="stylesheet" href="/styles.css">
+  
+
+  
+  
+  
+
+  
+  <link rel="alternate" href="/index.xml" type="application/rss+xml" title="Albin Fontaine">
+  <link rel="feed" href="/index.xml" type="application/rss+xml" title="Albin Fontaine">
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/">
+
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@albinfont">
+  <meta property="twitter:creator" content="@albinfont">
+  
+  <meta property="og:site_name" content="Albin Fontaine">
+  <meta property="og:url" content="/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/">
+  <meta property="og:title" content="Estimation of a vector-borne incubation period distribution: a Star Wars story | Albin Fontaine">
+  <meta property="og:description" content="Background A mysterious disease has emerged on planet Naboo. Both infected humans and other extra-terrestrial life forms experience fever, severe headaches, skin rash and mild bleeding symptoms. The FIRST ORDER has sent health experts in the area. They identified the causing agent as being a vector-borne virus transmitted by an autochthonous mosquito species. Estimating the virus incubation period in vertebrate hosts would help to determine the duration of the containment measure to control the outbreak.">
+  
+  
+    
+  <meta property="og:image" content="/img/icon-192.png">
+  <meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2018-12-15T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2018-12-15T00:00:00&#43;00:00">
+  
+
+  
+
+  
+
+  <title>Estimation of a vector-borne incubation period distribution: a Star Wars story | Albin Fontaine</title>
+
+</head>
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header fixed-top">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" role="textbox" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Albin Fontaine</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="/#about">
+            
+            <span>Home</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="/#publications_selected">
+            
+            <span>Publications</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="/#posts">
+            
+            <span>Behind the papers: Tutorials</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="/#contact">
+            
+            <span>Contact</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+<article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1 itemprop="name">Estimation of a vector-borne incubation period distribution: a Star Wars story</h1>
+
+  
+
+  
+    
+
+<div class="article-metadata">
+
+  
+  
+  <span itemscope itemprop="author" itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Albin Fontaine, PhD">
+  </span>
+  
+
+  <span class="article-date">
+    
+    <meta content="2018-12-15 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+    <time datetime="2018-12-15 00:00:00 &#43;0000 UTC" itemprop="dateModified">
+      Dec 15, 2018
+    </time>
+  </span>
+  <span itemscope itemprop="publisher" itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Albin Fontaine, PhD">
+  </span>
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    7 min read
+  </span>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/#disqus_thread"></a>
+  
+
+  
+
+  
+  
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    <li>
+      <a class="twitter"
+         href="https://twitter.com/intent/tweet?text=Estimation%20of%20a%20vector-borne%20incubation%20period%20distribution%3a%20a%20Star%20Wars%20story&amp;url=%2fpost%2festimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story%2f"
+         target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+    <li>
+      <a class="facebook"
+         href="https://www.facebook.com/sharer.php?u=%2fpost%2festimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story%2f"
+         target="_blank" rel="noopener">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+    </li>
+    <li>
+      <a class="linkedin"
+         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=%2fpost%2festimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story%2f&amp;title=Estimation%20of%20a%20vector-borne%20incubation%20period%20distribution%3a%20a%20Star%20Wars%20story"
+         target="_blank" rel="noopener">
+        <i class="fab fa-linkedin-in"></i>
+      </a>
+    </li>
+    <li>
+      <a class="weibo"
+         href="http://service.weibo.com/share/share.php?url=%2fpost%2festimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story%2f&amp;title=Estimation%20of%20a%20vector-borne%20incubation%20period%20distribution%3a%20a%20Star%20Wars%20story"
+         target="_blank" rel="noopener">
+        <i class="fab fa-weibo"></i>
+      </a>
+    </li>
+    <li>
+      <a class="email"
+         href="mailto:?subject=Estimation%20of%20a%20vector-borne%20incubation%20period%20distribution%3a%20a%20Star%20Wars%20story&amp;body=%2fpost%2festimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story%2f">
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<div id="a-mysterious-disease-has-emerged-on-planet-naboo.-both-infected-humans-and-other-extra-terrestrial-life-forms-experience-fever-severe-headaches-skin-rash-and-mild-bleeding-symptoms.-the-first-order-has-sent-health-experts-in-the-area.-they-identified-the-causing-agent-as-being-a-vector-borne-virus-transmitted-by-an-autochthonous-mosquito-species.-estimating-the-virus-incubation-period-in-vertebrate-hosts-would-help-to-determine-the-duration-of-the-containment-measure-to-control-the-outbreak." class="section level3">
+<h3>A mysterious disease has emerged on planet Naboo. Both infected humans and other extra-terrestrial life forms experience fever, severe headaches, skin rash and mild bleeding symptoms. The FIRST ORDER has sent health experts in the area. They identified the causing agent as being a vector-borne virus transmitted by an autochthonous mosquito species. Estimating the virus incubation period in vertebrate hosts would help to determine the duration of the containment measure to control the outbreak.</h3>
+<p>We will see here how to estimate an incubation period distribution in veterbrate hosts for a vector-borne pathogen. Vector-borne pathogens have a transmission cycle that involve invertebrate hosts (called the vector, i.e. mosquitoes, ticks, phlebotomes…) and vertebrate hosts (i.e., human or here extra-terrestrial :). We will assume here that virus acquisition by the vertebrate host can only be due to an infectious mosquito bites. Incubation period (IP) is defined here as the time elapsed from virus acquisition to onset of symptoms in vertebrate host. We will only focus on symptomatic infection here. Estimating the duration of IP in vertebrate hosts is not straightforward for vector-borne pathogens because date of infection through the bite of an infectious vector cannot usually be determined. People are usually bitten all the time by insects and they cannot trace back an infectious bite in time. We will exploit here declared travel and symptom dates of travelers entering or leaving areas with ongoing virus transmission with interval-censored time to event (survival) analyses.</p>
+<p>This code was used for the paper “Variability of Zika Virus Incubation Period in Humans” (<a href="https://www.ncbi.nlm.nih.gov/pubmed/30397624" class="uri">https://www.ncbi.nlm.nih.gov/pubmed/30397624</a>).</p>
+</div>
+</div>
+<div id="load-packages" class="section level2">
+<h2>Load packages</h2>
+<p>You will need these packages.</p>
+<pre class="r"><code>library(msm)
+library(survival)
+library(plyr)
+library(ggplot2)
+library(lubridate)
+library(interval)
+library(icenReg)
+#library(survminer) #Survminer is a nice package to visualize non-parametric survival curves. But I could&#39;nt make it work on interval censored data.</code></pre>
+</div>
+<div id="generate-data" class="section level2">
+<h2>Generate data</h2>
+<p>I generate a data.frame here. The first column of the data.frame is patient IDs, the second column indicates if they belong to the human race (Human=yes or no), the third column (Arrival) indicates the declared date of arrival in Naboo, the planet with active virus transmission. The last column indicates the duration of the stay in Naboo. All patients are travelers that visited the planet for a short period. There is no reported active virus transmission elsewhere in the galaxies. I generate a declared symptom onset date based on the date of arrival + a random number in the interval [1 ; Length_of_stay-1] + a incubation period drawn from a truncated (null or negative values not allowed) normal distribution, i.e. N(mean, SD=4). The mean for each patient category is indicated below.</p>
+<pre class="r"><code>set.seed(12)
+
+Mean_ip_human &lt;- 6 # Mean incubation period in human
+Mean_ip_alien &lt;- 12 # Mean incubation period in alien
+
+data &lt;- data.frame(ID=seq(1,194,1),
+                      Name=c(paste(&quot;Wookie&quot;,1:14, sep=&quot;_&quot;),paste(&quot;Ewok&quot;,1:50, sep=&quot;_&quot;), paste(&quot;Stormtrooper&quot;,1:70, sep=&quot;_&quot;), paste(&quot;Snowtrooper&quot;,1:60,sep=&quot;_&quot;)),
+                      Human=c(rep(&quot;no&quot;,64), rep(&quot;yes&quot;,70+60)) ,
+                      Arrival=sample(seq(as.Date(&quot;2016/01/01&quot;), as.Date(&quot;2018/01/01&quot;), by=&quot;day&quot;), 194) ,
+                      Length_of_stay_declared_days= round(rtnorm(194, mean = 15, sd = 4, lower=1)))
+
+data&lt;- ddply(data, .(ID), mutate,
+                  Symptoms= if(Human==&quot;no&quot;) {Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_alien, sd = 5, lower=1))}else{Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_human, sd = 5, lower=1))})</code></pre>
+<p>We use the lubridate package to convert dates:</p>
+<pre class="r"><code>data$Arrival &lt;- ymd(as.character(data$Arrival)) #lubridate
+data$Symptoms &lt;- ymd(as.character(data$Symptoms )) #lubridate</code></pre>
+<p>Lets denote A for the date of Arrival in the zone of transmission (planet Naboo), D for date of Departure from planet Naboo and S for the date of Symptom declaration.</p>
+<p>According to these terms we can calculate the following parameters:</p>
+<ul>
+<li>Duration of the stay in Naboo (Time_A_D)= D - A</li>
+<li>Duration from departure from Naboo and symptom onset (Time_D_S) = S - D</li>
+<li>Duration from arrival in Naboo and symptom onsets (Time_A_S) = S - A</li>
+</ul>
+<p>We also use the lubridate package to calculate the day of departure from the day of arrival and the period of stay in the zone of active transmission.</p>
+<pre class="r"><code>data &lt;- ddply(data, .(ID), mutate,
+              Departure= Arrival + Length_of_stay_declared_days,
+              Time_D_S= interval(Departure, Symptoms) %/% days(),
+              Time_A_D= interval(Arrival,Departure ) %/% days(),
+              Time_A_S= Time_A_D+Time_D_S)
+
+data &lt;- arrange(data, desc(Time_A_D))
+data$ID &lt;- factor(data$ID, levels=data$ID )</code></pre>
+<p>We can represent the travel data graphically:</p>
+<pre class="r"><code>p &lt;- ggplot(data=data)
+p &lt;- p + geom_vline(xintercept = 0, color = &quot;black&quot;, size=1 )
+p &lt;- p + geom_segment(aes(x = -Time_A_S , y = factor(ID), xend = -Time_D_S, yend = factor(ID), color=Human))
+p &lt;- p + geom_point(aes(x = -Time_A_S, y = factor(ID)), size = 2, color = &quot;orange&quot;)
+p &lt;- p + geom_point(aes(x = -Time_D_S, y = factor(ID)), size = 2, color = &quot;forestgreen&quot;)
+p &lt;- p + theme_bw(base_size = 20)
+p &lt;- p + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+#p &lt;- p + facet_wrap(~Human, scales = &quot;free_y&quot;, nrow=2)
+p &lt;- p + ggtitle(&quot;&quot;) + ylab(&quot;Individuals&quot;)
+p &lt;- p + scale_color_manual(values = c(&quot;dodgerblue3&quot;, &quot;deeppink2&quot;))
+p &lt;- p + scale_x_continuous(name=&quot;Time (days)&quot;, limits=c(-100,30), breaks=seq(-100,30,10))
+p</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/4-1.png" width="576" /></p>
+<p>The vertical black line represents the onset of symptoms. Travel data from human and not human patients are represented with colored horizontal lines. The arrival and departure from the area with ongoing virus transmission is represented with an orange and green dot, respectively.</p>
+<p>The exposure interval is delineated by the arrival date and the departure date for travelers that experienced symptoms after returning from travel, whereas the period separating the arrival date and the symptom onset date delineated the exposure interval in travelers experiencing illness during the journey.</p>
+<p>We can thus define the exposure interval with 2 different manners. Concerning patients experiencing symptoms after departure from endemic zone: exposure interval = Time_A_D Concerning patients experiencing symptoms during the trip: exposure interval = Time_A_S</p>
+<p>I am creating the interval censored data (Surv object) conditionally:</p>
+<pre class="r"><code>data$left &lt;- NA
+data$right &lt;- data$Time_A_S
+
+for(i in 1:nrow(data)) {
+if(data[i,&quot;Time_D_S&quot;] &lt; 0) {data[i,&quot;left&quot;] &lt;- 0}else{data[i,&quot;left&quot;] &lt;- data[i,&quot;Time_D_S&quot;]}
+}
+
+temp &lt;- with(data, Surv(left,right,type=&quot;interval2&quot;))</code></pre>
+</div>
+<div id="non-parametric-model" class="section level1">
+<h1>Non-parametric model</h1>
+<p>I first use non-parametric time to event model, which are the most robust (no bias related to mispecification of the hazard distribution). I am using here the icfit function from the <em>interval</em> package.</p>
+<pre class="r"><code>fit&lt;-icfit(temp~Human, data=data, conf.int=T )
+#summary(fit)
+
+#Cumulative distribution function
+plot(fit, conf.int = F, COL = c(&quot;deeppink2&quot;,&quot;dodgerblue3&quot;))
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/6-1.png" width="768" /></p>
+<p>Summary(fit) provides non-parametric maximum likelihood estimates (NPMLEs) of the IP distribution (generalization of the Kaplan-Meier estimate) with a modified bootstrap confidence interval (CI) method. Estimates are calculated over a set of time intervals called Turnbull intervals, which represent the innermost intervals over a group of individuals in which NPMLE can change. Median survival estimates correspond to the time where the survival probability reaches 0.5 (gold horizontal line).</p>
+<p>The median IP occured during the interval [6;7] for humans and [11;12] for extra-terrestrials. That correspond to mean values that we have setted up previously :smiley:.</p>
+<p>We can apply some statistical tests (non-parametric log-rank tests) implemented in the interval package:</p>
+<pre class="r"><code>#logrank: Sun&#39;s scores
+test&lt;-ictest(temp~Human, data=data)
+test
+
+#logrank: Finkelstein&#39;s scores
+test&lt;-ictest(temp~Human, data=data, scores=&quot;logrank2&quot;)
+test
+
+#Wilcoxon-type tests
+test&lt;-ictest(temp~Human, data=data, scores=&quot;wmw&quot;)
+test
+
+#Wilcoxon-type tests, exact Monte Carlo
+test&lt;-ictest(temp~Human, data=data, scores=&quot;wmw&quot;, exact=T)
+test</code></pre>
+<p>Patient category is significantly impacting the duration of virus incubation.</p>
+</div>
+<div id="parametric-model-accelerated-failure-time-regression-model-aft" class="section level1">
+<h1>Parametric model (accelerated failure-time regression model (AFT))</h1>
+<p>We now are going to model the incubation period distribution using parametric models (accelerated failure-time regression models (AFT).</p>
+<p>Fully parametric models provide more efficient inference and quantification of uncertainty of time to event estimates (smoother probability distribution with restricted confidence intervals) at the cost of requiring a correct assumption of the baseline distribution family. The use of fully parametric models is also convenient because they link a time post virus exposure to a probability of symptom onset through an equation with estimated parameters.</p>
+<p>We first have to determine the baseline function.</p>
+<pre class="r"><code>diag_baseline(temp ~ 1,
+              model = &quot;ph&quot;,
+              data = data,
+              dists = c(&quot;exponential&quot;, &quot;weibull&quot;,&quot;loglogistic&quot;, &quot;gamma&quot;, &quot;lnorm&quot;),
+              lgdLocation = &quot;topright&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/8-1.png" width="768" /></p>
+<p>I choose the loglogistic baseline distribution. We will now use the <em>icenReg</em> package (<a href="https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf" class="uri">https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf</a>).</p>
+<pre class="r"><code>fit_loglogistic &lt;- ic_par(temp ~ Human, data = data, model = &quot;aft&quot;, dist = &quot;loglogistic&quot;)
+summary(fit_loglogistic)
+
+newdata&lt;-data.frame(Human=levels(data$Human))
+rownames(newdata) &lt;- c(&quot;Not human&quot;, &quot;Human&quot;)
+
+survCIs(fit_loglogistic, p=0.5, newdata = newdata) #Median estimates
+survCIs(fit_loglogistic, p=0.95, newdata = newdata) #95th centiles estimates
+
+plot(fit_loglogistic, newdata = newdata, fun = &quot;cdf&quot;)
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/9-1.png" width="1152" /></p>
+<p>The plot displays parametric estimates of virus incubation period probabilities over time.</p>
+<p>The median estimates are 11.2 days and 6.4 days for aliens and human, respectively.</p>
+</div>
+<div id="bayesian-accelerated-failure-time-regression-model-aft" class="section level1">
+<h1>Bayesian accelerated failure-time regression model (AFT):</h1>
+<p>The icenReg R package dedicated to interval censored data offers the opportunity to extend fully parametric models to the Bayesian framework. In this case, Bayesian inference is used to estimate the log-logistic baseline distribution parameters (shape and scale) instead of maximum likelihood estimation (MLE).</p>
+<p>We will use flat priors here. You can refer to <em>icenReg</em> package documentation if you want to use priors.</p>
+<pre class="r"><code>bayes_fit &lt;- ic_bayes(temp ~ Human,
+                      data = data,
+                      model = &quot;aft&quot;, dist = &quot;loglogistic&quot;,
+                      controls = bayesControls(samples = 100000, chains = 4, useMLE_start = TRUE,
+                                               burnIn = 1000))
+
+(CI &lt;- survCIs(bayes_fit, p=0.5, newdata = newdata))
+(CI2 &lt;- survCIs(bayes_fit, p=0.95, newdata = newdata))
+
+plot(bayes_fit, newdata = newdata, fun = &quot;cdf&quot;)
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/10-1.png" width="1152" /></p>
+<p>The Bayesian median estimates are 11.12 days and 6.39 days for aliens and human, respectively, it is not very different from AFT estimates.</p>
+</div>
+
+    </div>
+
+    
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/time-to-event-models/">time-to-event models</a>
+  
+  <a class="badge badge-light" href="/tags/interval-censored/">interval-censored</a>
+  
+  <a class="badge badge-light" href="/tags/interval-package/">interval package</a>
+  
+  <a class="badge badge-light" href="/tags/icenreg-r-pack-age/">icenReg R pack- age</a>
+  
+  <a class="badge badge-light" href="/tags/incubation-period/">incubation period</a>
+  
+</div>
+
+
+
+    
+
+
+
+
+
+
+<div class="media author-card" itemscope itemtype="http://schema.org/Person">
+  
+  <img class="portrait mr-3" src="/img/Me_pro.svg" itemprop="image" alt="Avatar">
+  
+  <div class="media-body">
+    <h5 class="card-title" itemprop="name"><a href="/">Albin Fontaine, PhD</a></h5>
+    <h6 class="card-subtitle">Scientist working on Mosquito-Borne Pathogens</h6>
+    
+    <ul class="network-icon" aria-hidden="true">
+      
+      
+      
+      
+        
+      
+      
+      
+      
+      
+        
+      
+      <li>
+        <a itemprop="sameAs" href="/#contact" >
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+      
+      
+      
+      
+        
+      
+      
+      
+      
+      
+        
+      
+      <li>
+        <a itemprop="sameAs" href="https://twitter.com/albinfont" target="_blank" rel="noopener">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+      
+      
+      
+      
+      
+      
+      
+      
+        
+      
+      <li>
+        <a itemprop="sameAs" href="https://scholar.google.co.uk/citations?pli=1&amp;user=yjJf5eIAAAAJ" target="_blank" rel="noopener">
+          <i class="ai ai-google-scholar"></i>
+        </a>
+      </li>
+      
+      
+      
+      
+      
+      
+      
+      
+        
+      
+      <li>
+        <a itemprop="sameAs" href="https://orcid.org/0000-0001-6869-6516" target="_blank" rel="noopener">
+          <i class="ai ai-orcid"></i>
+        </a>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+
+
+    
+    
+
+    
+
+    
+<section id="comments">
+  <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "Albin" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</section>
+
+
+
+  </div>
+</article>
+
+<div class="container">
+  <footer class="site-footer">
+  
+  <p class="powered-by">
+    <a href="/privacy/">Privacy Policy</a>
+  </p>
+  
+
+  <p class="powered-by">
+    &copy; 2018 &middot; 
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" id="back_to_top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+</div>
+
+
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha512-+NqPlbbtM1QqiK8ZAo4Yrj2c4lNQoGv8P79DPtKzj++l5jnN39rHA/xsqn8zE9l0uSoxaCdrOgFs6yjyfbBxSg==" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.3/imagesloaded.pkgd.min.js" integrity="sha512-umsR78NN0D23AzgoZ11K7raBD+R6hqKojyBZs1w8WvYlsI+QuKRGBx3LFCwhatzBunCjDuJpDHwxD13sLMbpRA==" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.4/isotope.pkgd.min.js" integrity="sha512-VDBOIlDbuC4VWxGJNmuFRQ0Li0SKkDpmGyuhAG5LTDLd/dJ/S0WMVxriR2Y+CyPL5gzjpN4f/6iqWVBJlht0tQ==" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+    <script id="dsq-count-scr" src="//Albin.disqus.com/count.js" async></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    <script>
+      const search_index_filename = "/index.json";
+      const i18n = {
+        'placeholder': "Search...",
+        'results': "results found",
+        'no_results': "No results found"
+      };
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academic.min.74b0d3361475b08c40cf31120e82937b.js"></script>
+
+    
+
+  </body>
+</html>
+

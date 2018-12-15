@@ -1,0 +1,176 @@
+---
+title: 'Estimation of a vector-borne incubation period distribution: a Star Wars story'
+author: Albin Fontaine
+date: '2018-12-15'
+slug: estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story
+categories: []
+tags:
+  - time-to-event models
+  - interval-censored
+  - interval package
+  - icenReg R pack- age
+  - incubation period
+image:
+  caption: ''
+  focal_point: ''
+---
+
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<div id="a-mysterious-disease-has-emerged-on-planet-naboo.-both-infected-humans-and-other-extra-terrestrial-life-forms-experience-fever-severe-headaches-skin-rash-and-mild-bleeding-symptoms.-the-first-order-has-sent-health-experts-in-the-area.-they-identified-the-causing-agent-as-being-a-vector-borne-virus-transmitted-by-an-autochthonous-mosquito-species.-estimating-the-virus-incubation-period-in-vertebrate-hosts-would-help-to-determine-the-duration-of-the-containment-measure-to-control-the-outbreak." class="section level3">
+<h3>A mysterious disease has emerged on planet Naboo. Both infected humans and other extra-terrestrial life forms experience fever, severe headaches, skin rash and mild bleeding symptoms. The FIRST ORDER has sent health experts in the area. They identified the causing agent as being a vector-borne virus transmitted by an autochthonous mosquito species. Estimating the virus incubation period in vertebrate hosts would help to determine the duration of the containment measure to control the outbreak.</h3>
+<p>We will see here how to estimate an incubation period distribution in veterbrate hosts for a vector-borne pathogen. Vector-borne pathogens have a transmission cycle that involve invertebrate hosts (called the vector, i.e. mosquitoes, ticks, phlebotomes…) and vertebrate hosts (i.e., human or here extra-terrestrial :). We will assume here that virus acquisition by the vertebrate host can only be due to an infectious mosquito bites. Incubation period (IP) is defined here as the time elapsed from virus acquisition to onset of symptoms in vertebrate host. We will only focus on symptomatic infection here. Estimating the duration of IP in vertebrate hosts is not straightforward for vector-borne pathogens because date of infection through the bite of an infectious vector cannot usually be determined. People are usually bitten all the time by insects and they cannot trace back an infectious bite in time. We will exploit here declared travel and symptom dates of travelers entering or leaving areas with ongoing virus transmission with interval-censored time to event (survival) analyses.</p>
+<p>This code was used for the paper “Variability of Zika Virus Incubation Period in Humans” (<a href="https://www.ncbi.nlm.nih.gov/pubmed/30397624" class="uri">https://www.ncbi.nlm.nih.gov/pubmed/30397624</a>).</p>
+</div>
+</div>
+<div id="load-packages" class="section level2">
+<h2>Load packages</h2>
+<p>You will need these packages.</p>
+<pre class="r"><code>library(msm)
+library(survival)
+library(plyr)
+library(ggplot2)
+library(lubridate)
+library(interval)
+library(icenReg)
+#library(survminer) #Survminer is a nice package to visualize non-parametric survival curves. But I could&#39;nt make it work on interval censored data.</code></pre>
+</div>
+<div id="generate-data" class="section level2">
+<h2>Generate data</h2>
+<p>I generate a data.frame here. The first column of the data.frame is patient IDs, the second column indicates if they belong to the human race (Human=yes or no), the third column (Arrival) indicates the declared date of arrival in Naboo, the planet with active virus transmission. The last column indicates the duration of the stay in Naboo. All patients are travelers that visited the planet for a short period. There is no reported active virus transmission elsewhere in the galaxies. I generate a declared symptom onset date based on the date of arrival + a random number in the interval [1 ; Length_of_stay-1] + a incubation period drawn from a truncated (null or negative values not allowed) normal distribution, i.e. N(mean, SD=4). The mean for each patient category is indicated below.</p>
+<pre class="r"><code>set.seed(12)
+
+Mean_ip_human &lt;- 6 # Mean incubation period in human
+Mean_ip_alien &lt;- 12 # Mean incubation period in alien
+
+data &lt;- data.frame(ID=seq(1,194,1),
+                      Name=c(paste(&quot;Wookie&quot;,1:14, sep=&quot;_&quot;),paste(&quot;Ewok&quot;,1:50, sep=&quot;_&quot;), paste(&quot;Stormtrooper&quot;,1:70, sep=&quot;_&quot;), paste(&quot;Snowtrooper&quot;,1:60,sep=&quot;_&quot;)),
+                      Human=c(rep(&quot;no&quot;,64), rep(&quot;yes&quot;,70+60)) ,
+                      Arrival=sample(seq(as.Date(&quot;2016/01/01&quot;), as.Date(&quot;2018/01/01&quot;), by=&quot;day&quot;), 194) ,
+                      Length_of_stay_declared_days= round(rtnorm(194, mean = 15, sd = 4, lower=1)))
+
+data&lt;- ddply(data, .(ID), mutate,
+                  Symptoms= if(Human==&quot;no&quot;) {Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_alien, sd = 5, lower=1))}else{Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_human, sd = 5, lower=1))})</code></pre>
+<p>We use the lubridate package to convert dates:</p>
+<pre class="r"><code>data$Arrival &lt;- ymd(as.character(data$Arrival)) #lubridate
+data$Symptoms &lt;- ymd(as.character(data$Symptoms )) #lubridate</code></pre>
+<p>Lets denote A for the date of Arrival in the zone of transmission (planet Naboo), D for date of Departure from planet Naboo and S for the date of Symptom declaration.</p>
+<p>According to these terms we can calculate the following parameters:</p>
+<ul>
+<li>Duration of the stay in Naboo (Time_A_D)= D - A</li>
+<li>Duration from departure from Naboo and symptom onset (Time_D_S) = S - D</li>
+<li>Duration from arrival in Naboo and symptom onsets (Time_A_S) = S - A</li>
+</ul>
+<p>We also use the lubridate package to calculate the day of departure from the day of arrival and the period of stay in the zone of active transmission.</p>
+<pre class="r"><code>data &lt;- ddply(data, .(ID), mutate,
+              Departure= Arrival + Length_of_stay_declared_days,
+              Time_D_S= interval(Departure, Symptoms) %/% days(),
+              Time_A_D= interval(Arrival,Departure ) %/% days(),
+              Time_A_S= Time_A_D+Time_D_S)
+
+data &lt;- arrange(data, desc(Time_A_D))
+data$ID &lt;- factor(data$ID, levels=data$ID )</code></pre>
+<p>We can represent the travel data graphically:</p>
+<pre class="r"><code>p &lt;- ggplot(data=data)
+p &lt;- p + geom_vline(xintercept = 0, color = &quot;black&quot;, size=1 )
+p &lt;- p + geom_segment(aes(x = -Time_A_S , y = factor(ID), xend = -Time_D_S, yend = factor(ID), color=Human))
+p &lt;- p + geom_point(aes(x = -Time_A_S, y = factor(ID)), size = 2, color = &quot;orange&quot;)
+p &lt;- p + geom_point(aes(x = -Time_D_S, y = factor(ID)), size = 2, color = &quot;forestgreen&quot;)
+p &lt;- p + theme_bw(base_size = 20)
+p &lt;- p + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+#p &lt;- p + facet_wrap(~Human, scales = &quot;free_y&quot;, nrow=2)
+p &lt;- p + ggtitle(&quot;&quot;) + ylab(&quot;Individuals&quot;)
+p &lt;- p + scale_color_manual(values = c(&quot;dodgerblue3&quot;, &quot;deeppink2&quot;))
+p &lt;- p + scale_x_continuous(name=&quot;Time (days)&quot;, limits=c(-100,30), breaks=seq(-100,30,10))
+p</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/4-1.png" width="576" /></p>
+<p>The vertical black line represents the onset of symptoms. Travel data from human and not human patients are represented with colored horizontal lines. The arrival and departure from the area with ongoing virus transmission is represented with an orange and green dot, respectively.</p>
+<p>The exposure interval is delineated by the arrival date and the departure date for travelers that experienced symptoms after returning from travel, whereas the period separating the arrival date and the symptom onset date delineated the exposure interval in travelers experiencing illness during the journey.</p>
+<p>We can thus define the exposure interval with 2 different manners. Concerning patients experiencing symptoms after departure from endemic zone: exposure interval = Time_A_D Concerning patients experiencing symptoms during the trip: exposure interval = Time_A_S</p>
+<p>I am creating the interval censored data (Surv object) conditionally:</p>
+<pre class="r"><code>data$left &lt;- NA
+data$right &lt;- data$Time_A_S
+
+for(i in 1:nrow(data)) {
+if(data[i,&quot;Time_D_S&quot;] &lt; 0) {data[i,&quot;left&quot;] &lt;- 0}else{data[i,&quot;left&quot;] &lt;- data[i,&quot;Time_D_S&quot;]}
+}
+
+temp &lt;- with(data, Surv(left,right,type=&quot;interval2&quot;))</code></pre>
+</div>
+<div id="non-parametric-model" class="section level1">
+<h1>Non-parametric model</h1>
+<p>I first use non-parametric time to event model, which are the most robust (no bias related to mispecification of the hazard distribution). I am using here the icfit function from the <em>interval</em> package.</p>
+<pre class="r"><code>fit&lt;-icfit(temp~Human, data=data, conf.int=T )
+#summary(fit)
+
+#Cumulative distribution function
+plot(fit, conf.int = F, COL = c(&quot;deeppink2&quot;,&quot;dodgerblue3&quot;))
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/6-1.png" width="768" /></p>
+<p>Summary(fit) provides non-parametric maximum likelihood estimates (NPMLEs) of the IP distribution (generalization of the Kaplan-Meier estimate) with a modified bootstrap confidence interval (CI) method. Estimates are calculated over a set of time intervals called Turnbull intervals, which represent the innermost intervals over a group of individuals in which NPMLE can change. Median survival estimates correspond to the time where the survival probability reaches 0.5 (gold horizontal line).</p>
+<p>The median IP occured during the interval [6;7] for humans and [11;12] for extra-terrestrials. That correspond to mean values that we have setted up previously :smiley:.</p>
+<p>We can apply some statistical tests (non-parametric log-rank tests) implemented in the interval package:</p>
+<pre class="r"><code>#logrank: Sun&#39;s scores
+test&lt;-ictest(temp~Human, data=data)
+test
+
+#logrank: Finkelstein&#39;s scores
+test&lt;-ictest(temp~Human, data=data, scores=&quot;logrank2&quot;)
+test
+
+#Wilcoxon-type tests
+test&lt;-ictest(temp~Human, data=data, scores=&quot;wmw&quot;)
+test
+
+#Wilcoxon-type tests, exact Monte Carlo
+test&lt;-ictest(temp~Human, data=data, scores=&quot;wmw&quot;, exact=T)
+test</code></pre>
+<p>Patient category is significantly impacting the duration of virus incubation.</p>
+</div>
+<div id="parametric-model-accelerated-failure-time-regression-model-aft" class="section level1">
+<h1>Parametric model (accelerated failure-time regression model (AFT))</h1>
+<p>We now are going to model the incubation period distribution using parametric models (accelerated failure-time regression models (AFT).</p>
+<p>Fully parametric models provide more efficient inference and quantification of uncertainty of time to event estimates (smoother probability distribution with restricted confidence intervals) at the cost of requiring a correct assumption of the baseline distribution family. The use of fully parametric models is also convenient because they link a time post virus exposure to a probability of symptom onset through an equation with estimated parameters.</p>
+<p>We first have to determine the baseline function.</p>
+<pre class="r"><code>diag_baseline(temp ~ 1,
+              model = &quot;ph&quot;,
+              data = data,
+              dists = c(&quot;exponential&quot;, &quot;weibull&quot;,&quot;loglogistic&quot;, &quot;gamma&quot;, &quot;lnorm&quot;),
+              lgdLocation = &quot;topright&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/8-1.png" width="768" /></p>
+<p>I choose the loglogistic baseline distribution. We will now use the <em>icenReg</em> package (<a href="https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf" class="uri">https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf</a>).</p>
+<pre class="r"><code>fit_loglogistic &lt;- ic_par(temp ~ Human, data = data, model = &quot;aft&quot;, dist = &quot;loglogistic&quot;)
+summary(fit_loglogistic)
+
+newdata&lt;-data.frame(Human=levels(data$Human))
+rownames(newdata) &lt;- c(&quot;Not human&quot;, &quot;Human&quot;)
+
+survCIs(fit_loglogistic, p=0.5, newdata = newdata) #Median estimates
+survCIs(fit_loglogistic, p=0.95, newdata = newdata) #95th centiles estimates
+
+plot(fit_loglogistic, newdata = newdata, fun = &quot;cdf&quot;)
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/9-1.png" width="1152" /></p>
+<p>The plot displays parametric estimates of virus incubation period probabilities over time.</p>
+<p>The median estimates are 11.2 days and 6.4 days for aliens and human, respectively.</p>
+</div>
+<div id="bayesian-accelerated-failure-time-regression-model-aft" class="section level1">
+<h1>Bayesian accelerated failure-time regression model (AFT):</h1>
+<p>The icenReg R package dedicated to interval censored data offers the opportunity to extend fully parametric models to the Bayesian framework. In this case, Bayesian inference is used to estimate the log-logistic baseline distribution parameters (shape and scale) instead of maximum likelihood estimation (MLE).</p>
+<p>We will use flat priors here. You can refer to <em>icenReg</em> package documentation if you want to use priors.</p>
+<pre class="r"><code>bayes_fit &lt;- ic_bayes(temp ~ Human,
+                      data = data,
+                      model = &quot;aft&quot;, dist = &quot;loglogistic&quot;,
+                      controls = bayesControls(samples = 100000, chains = 4, useMLE_start = TRUE,
+                                               burnIn = 1000))
+
+(CI &lt;- survCIs(bayes_fit, p=0.5, newdata = newdata))
+(CI2 &lt;- survCIs(bayes_fit, p=0.95, newdata = newdata))
+
+plot(bayes_fit, newdata = newdata, fun = &quot;cdf&quot;)
+abline(h=0.5, col=&quot;gold3&quot;)</code></pre>
+<p><img src="/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/10-1.png" width="1152" /></p>
+<p>The Bayesian median estimates are 11.12 days and 6.39 days for aliens and human, respectively, it is not very different from AFT estimates.</p>
+</div>

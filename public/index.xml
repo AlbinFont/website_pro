@@ -11,6 +11,227 @@
     <atom:link href="/" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Estimation of a vector-borne incubation period distribution: a Star Wars story</title>
+      <link>/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/</link>
+      <pubDate>Sat, 15 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story/</guid>
+      <description>
+
+
+&lt;div id=&#34;background&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Background&lt;/h2&gt;
+&lt;div id=&#34;a-mysterious-disease-has-emerged-on-planet-naboo.-both-infected-humans-and-other-extra-terrestrial-life-forms-experience-fever-severe-headaches-skin-rash-and-mild-bleeding-symptoms.-the-first-order-has-sent-health-experts-in-the-area.-they-identified-the-causing-agent-as-being-a-vector-borne-virus-transmitted-by-an-autochthonous-mosquito-species.-estimating-the-virus-incubation-period-in-vertebrate-hosts-would-help-to-determine-the-duration-of-the-containment-measure-to-control-the-outbreak.&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;A mysterious disease has emerged on planet Naboo. Both infected humans and other extra-terrestrial life forms experience fever, severe headaches, skin rash and mild bleeding symptoms. The FIRST ORDER has sent health experts in the area. They identified the causing agent as being a vector-borne virus transmitted by an autochthonous mosquito species. Estimating the virus incubation period in vertebrate hosts would help to determine the duration of the containment measure to control the outbreak.&lt;/h3&gt;
+&lt;p&gt;We will see here how to estimate an incubation period distribution in veterbrate hosts for a vector-borne pathogen. Vector-borne pathogens have a transmission cycle that involve invertebrate hosts (called the vector, i.e. mosquitoes, ticks, phlebotomes…) and vertebrate hosts (i.e., human or here extra-terrestrial :). We will assume here that virus acquisition by the vertebrate host can only be due to an infectious mosquito bites. Incubation period (IP) is defined here as the time elapsed from virus acquisition to onset of symptoms in vertebrate host. We will only focus on symptomatic infection here. Estimating the duration of IP in vertebrate hosts is not straightforward for vector-borne pathogens because date of infection through the bite of an infectious vector cannot usually be determined. People are usually bitten all the time by insects and they cannot trace back an infectious bite in time. We will exploit here declared travel and symptom dates of travelers entering or leaving areas with ongoing virus transmission with interval-censored time to event (survival) analyses.&lt;/p&gt;
+&lt;p&gt;This code was used for the paper “Variability of Zika Virus Incubation Period in Humans” (&lt;a href=&#34;https://www.ncbi.nlm.nih.gov/pubmed/30397624&#34; class=&#34;uri&#34;&gt;https://www.ncbi.nlm.nih.gov/pubmed/30397624&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;load-packages&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Load packages&lt;/h2&gt;
+&lt;p&gt;You will need these packages.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(msm)
+library(survival)
+library(plyr)
+library(ggplot2)
+library(lubridate)
+library(interval)
+library(icenReg)
+#library(survminer) #Survminer is a nice package to visualize non-parametric survival curves. But I could&amp;#39;nt make it work on interval censored data.&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;generate-data&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Generate data&lt;/h2&gt;
+&lt;p&gt;I generate a data.frame here. The first column of the data.frame is patient IDs, the second column indicates if they belong to the human race (Human=yes or no), the third column (Arrival) indicates the declared date of arrival in Naboo, the planet with active virus transmission. The last column indicates the duration of the stay in Naboo. All patients are travelers that visited the planet for a short period. There is no reported active virus transmission elsewhere in the galaxies. I generate a declared symptom onset date based on the date of arrival + a random number in the interval [1 ; Length_of_stay-1] + a incubation period drawn from a truncated (null or negative values not allowed) normal distribution, i.e. N(mean, SD=4). The mean for each patient category is indicated below.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(12)
+
+Mean_ip_human &amp;lt;- 6 # Mean incubation period in human
+Mean_ip_alien &amp;lt;- 12 # Mean incubation period in alien
+
+data &amp;lt;- data.frame(ID=seq(1,194,1),
+                      Name=c(paste(&amp;quot;Wookie&amp;quot;,1:14, sep=&amp;quot;_&amp;quot;),paste(&amp;quot;Ewok&amp;quot;,1:50, sep=&amp;quot;_&amp;quot;), paste(&amp;quot;Stormtrooper&amp;quot;,1:70, sep=&amp;quot;_&amp;quot;), paste(&amp;quot;Snowtrooper&amp;quot;,1:60,sep=&amp;quot;_&amp;quot;)),
+                      Human=c(rep(&amp;quot;no&amp;quot;,64), rep(&amp;quot;yes&amp;quot;,70+60)) ,
+                      Arrival=sample(seq(as.Date(&amp;quot;2016/01/01&amp;quot;), as.Date(&amp;quot;2018/01/01&amp;quot;), by=&amp;quot;day&amp;quot;), 194) ,
+                      Length_of_stay_declared_days= round(rtnorm(194, mean = 15, sd = 4, lower=1)))
+
+data&amp;lt;- ddply(data, .(ID), mutate,
+                  Symptoms= if(Human==&amp;quot;no&amp;quot;) {Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_alien, sd = 5, lower=1))}else{Arrival + sample(x = 1:(Length_of_stay_declared_days-1), 1) + round(rtnorm(1, mean = Mean_ip_human, sd = 5, lower=1))})&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We use the lubridate package to convert dates:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data$Arrival &amp;lt;- ymd(as.character(data$Arrival)) #lubridate
+data$Symptoms &amp;lt;- ymd(as.character(data$Symptoms )) #lubridate&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lets denote A for the date of Arrival in the zone of transmission (planet Naboo), D for date of Departure from planet Naboo and S for the date of Symptom declaration.&lt;/p&gt;
+&lt;p&gt;According to these terms we can calculate the following parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Duration of the stay in Naboo (Time_A_D)= D - A&lt;/li&gt;
+&lt;li&gt;Duration from departure from Naboo and symptom onset (Time_D_S) = S - D&lt;/li&gt;
+&lt;li&gt;Duration from arrival in Naboo and symptom onsets (Time_A_S) = S - A&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We also use the lubridate package to calculate the day of departure from the day of arrival and the period of stay in the zone of active transmission.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data &amp;lt;- ddply(data, .(ID), mutate,
+              Departure= Arrival + Length_of_stay_declared_days,
+              Time_D_S= interval(Departure, Symptoms) %/% days(),
+              Time_A_D= interval(Arrival,Departure ) %/% days(),
+              Time_A_S= Time_A_D+Time_D_S)
+
+data &amp;lt;- arrange(data, desc(Time_A_D))
+data$ID &amp;lt;- factor(data$ID, levels=data$ID )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can represent the travel data graphically:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p &amp;lt;- ggplot(data=data)
+p &amp;lt;- p + geom_vline(xintercept = 0, color = &amp;quot;black&amp;quot;, size=1 )
+p &amp;lt;- p + geom_segment(aes(x = -Time_A_S , y = factor(ID), xend = -Time_D_S, yend = factor(ID), color=Human))
+p &amp;lt;- p + geom_point(aes(x = -Time_A_S, y = factor(ID)), size = 2, color = &amp;quot;orange&amp;quot;)
+p &amp;lt;- p + geom_point(aes(x = -Time_D_S, y = factor(ID)), size = 2, color = &amp;quot;forestgreen&amp;quot;)
+p &amp;lt;- p + theme_bw(base_size = 20)
+p &amp;lt;- p + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+#p &amp;lt;- p + facet_wrap(~Human, scales = &amp;quot;free_y&amp;quot;, nrow=2)
+p &amp;lt;- p + ggtitle(&amp;quot;&amp;quot;) + ylab(&amp;quot;Individuals&amp;quot;)
+p &amp;lt;- p + scale_color_manual(values = c(&amp;quot;dodgerblue3&amp;quot;, &amp;quot;deeppink2&amp;quot;))
+p &amp;lt;- p + scale_x_continuous(name=&amp;quot;Time (days)&amp;quot;, limits=c(-100,30), breaks=seq(-100,30,10))
+p&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/4-1.png&#34; width=&#34;576&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The vertical black line represents the onset of symptoms. Travel data from human and not human patients are represented with colored horizontal lines. The arrival and departure from the area with ongoing virus transmission is represented with an orange and green dot, respectively.&lt;/p&gt;
+&lt;p&gt;The exposure interval is delineated by the arrival date and the departure date for travelers that experienced symptoms after returning from travel, whereas the period separating the arrival date and the symptom onset date delineated the exposure interval in travelers experiencing illness during the journey.&lt;/p&gt;
+&lt;p&gt;We can thus define the exposure interval with 2 different manners. Concerning patients experiencing symptoms after departure from endemic zone: exposure interval = Time_A_D Concerning patients experiencing symptoms during the trip: exposure interval = Time_A_S&lt;/p&gt;
+&lt;p&gt;I am creating the interval censored data (Surv object) conditionally:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data$left &amp;lt;- NA
+data$right &amp;lt;- data$Time_A_S
+
+for(i in 1:nrow(data)) {
+if(data[i,&amp;quot;Time_D_S&amp;quot;] &amp;lt; 0) {data[i,&amp;quot;left&amp;quot;] &amp;lt;- 0}else{data[i,&amp;quot;left&amp;quot;] &amp;lt;- data[i,&amp;quot;Time_D_S&amp;quot;]}
+}
+
+temp &amp;lt;- with(data, Surv(left,right,type=&amp;quot;interval2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;non-parametric-model&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Non-parametric model&lt;/h1&gt;
+&lt;p&gt;I first use non-parametric time to event model, which are the most robust (no bias related to mispecification of the hazard distribution). I am using here the icfit function from the &lt;em&gt;interval&lt;/em&gt; package.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fit&amp;lt;-icfit(temp~Human, data=data, conf.int=T )
+#summary(fit)
+
+#Cumulative distribution function
+plot(fit, conf.int = F, COL = c(&amp;quot;deeppink2&amp;quot;,&amp;quot;dodgerblue3&amp;quot;))
+abline(h=0.5, col=&amp;quot;gold3&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/6-1.png&#34; width=&#34;768&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Summary(fit) provides non-parametric maximum likelihood estimates (NPMLEs) of the IP distribution (generalization of the Kaplan-Meier estimate) with a modified bootstrap confidence interval (CI) method. Estimates are calculated over a set of time intervals called Turnbull intervals, which represent the innermost intervals over a group of individuals in which NPMLE can change. Median survival estimates correspond to the time where the survival probability reaches 0.5 (gold horizontal line).&lt;/p&gt;
+&lt;p&gt;The median IP occured during the interval [6;7] for humans and [11;12] for extra-terrestrials. That correspond to mean values that we have setted up previously :smiley:.&lt;/p&gt;
+&lt;p&gt;We can apply some statistical tests (non-parametric log-rank tests) implemented in the interval package:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#logrank: Sun&amp;#39;s scores
+test&amp;lt;-ictest(temp~Human, data=data)
+test
+
+#logrank: Finkelstein&amp;#39;s scores
+test&amp;lt;-ictest(temp~Human, data=data, scores=&amp;quot;logrank2&amp;quot;)
+test
+
+#Wilcoxon-type tests
+test&amp;lt;-ictest(temp~Human, data=data, scores=&amp;quot;wmw&amp;quot;)
+test
+
+#Wilcoxon-type tests, exact Monte Carlo
+test&amp;lt;-ictest(temp~Human, data=data, scores=&amp;quot;wmw&amp;quot;, exact=T)
+test&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Patient category is significantly impacting the duration of virus incubation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;parametric-model-accelerated-failure-time-regression-model-aft&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Parametric model (accelerated failure-time regression model (AFT))&lt;/h1&gt;
+&lt;p&gt;We now are going to model the incubation period distribution using parametric models (accelerated failure-time regression models (AFT).&lt;/p&gt;
+&lt;p&gt;Fully parametric models provide more efficient inference and quantification of uncertainty of time to event estimates (smoother probability distribution with restricted confidence intervals) at the cost of requiring a correct assumption of the baseline distribution family. The use of fully parametric models is also convenient because they link a time post virus exposure to a probability of symptom onset through an equation with estimated parameters.&lt;/p&gt;
+&lt;p&gt;We first have to determine the baseline function.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;diag_baseline(temp ~ 1,
+              model = &amp;quot;ph&amp;quot;,
+              data = data,
+              dists = c(&amp;quot;exponential&amp;quot;, &amp;quot;weibull&amp;quot;,&amp;quot;loglogistic&amp;quot;, &amp;quot;gamma&amp;quot;, &amp;quot;lnorm&amp;quot;),
+              lgdLocation = &amp;quot;topright&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/8-1.png&#34; width=&#34;768&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;I choose the loglogistic baseline distribution. We will now use the &lt;em&gt;icenReg&lt;/em&gt; package (&lt;a href=&#34;https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf&#34; class=&#34;uri&#34;&gt;https://cran.r-project.org/web/packages/icenReg/vignettes/icenReg.pdf&lt;/a&gt;).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fit_loglogistic &amp;lt;- ic_par(temp ~ Human, data = data, model = &amp;quot;aft&amp;quot;, dist = &amp;quot;loglogistic&amp;quot;)
+summary(fit_loglogistic)
+
+newdata&amp;lt;-data.frame(Human=levels(data$Human))
+rownames(newdata) &amp;lt;- c(&amp;quot;Not human&amp;quot;, &amp;quot;Human&amp;quot;)
+
+survCIs(fit_loglogistic, p=0.5, newdata = newdata) #Median estimates
+survCIs(fit_loglogistic, p=0.95, newdata = newdata) #95th centiles estimates
+
+plot(fit_loglogistic, newdata = newdata, fun = &amp;quot;cdf&amp;quot;)
+abline(h=0.5, col=&amp;quot;gold3&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/9-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The plot displays parametric estimates of virus incubation period probabilities over time.&lt;/p&gt;
+&lt;p&gt;The median estimates are 11.2 days and 6.4 days for aliens and human, respectively.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;bayesian-accelerated-failure-time-regression-model-aft&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Bayesian accelerated failure-time regression model (AFT):&lt;/h1&gt;
+&lt;p&gt;The icenReg R package dedicated to interval censored data offers the opportunity to extend fully parametric models to the Bayesian framework. In this case, Bayesian inference is used to estimate the log-logistic baseline distribution parameters (shape and scale) instead of maximum likelihood estimation (MLE).&lt;/p&gt;
+&lt;p&gt;We will use flat priors here. You can refer to &lt;em&gt;icenReg&lt;/em&gt; package documentation if you want to use priors.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bayes_fit &amp;lt;- ic_bayes(temp ~ Human,
+                      data = data,
+                      model = &amp;quot;aft&amp;quot;, dist = &amp;quot;loglogistic&amp;quot;,
+                      controls = bayesControls(samples = 100000, chains = 4, useMLE_start = TRUE,
+                                               burnIn = 1000))
+
+(CI &amp;lt;- survCIs(bayes_fit, p=0.5, newdata = newdata))
+(CI2 &amp;lt;- survCIs(bayes_fit, p=0.95, newdata = newdata))
+
+plot(bayes_fit, newdata = newdata, fun = &amp;quot;cdf&amp;quot;)
+abline(h=0.5, col=&amp;quot;gold3&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2018-12-15-estimation-of-a-vector-borne-incubation-period-distribution-a-star-wars-story_files/figure-html/10-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The Bayesian median estimates are 11.12 days and 6.39 days for aliens and human, respectively, it is not very different from AFT estimates.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Hello R Blogdown</title>
+      <link>/post/hello-r-blogdown/</link>
+      <pubDate>Fri, 14 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/hello-r-blogdown/</guid>
+      <description>&lt;p&gt;A major turnover in my young scientist career was to learn how to code in the R environment. R brought my science abilities to a next level and allowed me to be transversal: to deal with huge data sets, perform simple and hard-core statistic tests, visualize complex data, create maps, &amp;hellip; without knowing anything else than applying a very well documented R package or R tutorial. Hey! &lt;strong&gt;R&lt;/strong&gt; also allows me to create a website so easily thanks to the R Blogdown (&lt;a href=&#34;https://bookdown.org/yihui/blogdown/&#34; target=&#34;_blank&#34;&gt;https://bookdown.org/yihui/blogdown/&lt;/a&gt;) package and Hugo with academic theme (&lt;a href=&#34;https://themes.gohugo.io/theme/academic/&#34; target=&#34;_blank&#34;&gt;https://themes.gohugo.io/theme/academic/&lt;/a&gt;) without any background. I am infinitely grateful to all members of the R community that have helped R to become what it is today through numerous open-source packages, tutorials or blogs. Through my “behind the paper tutorials”, I aim to bring my modest contribution by sharing some of my code.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Estimation of an arbovirus incubation period distribution based on travellers data: A Star Wars example</title>
+      <link>/tutorial/example/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0100</pubDate>
+      
+      <guid>/tutorial/example/</guid>
+      <description>
+
+&lt;p&gt;We will see here how to estimate an incubation period distribution in humans for a vector-borne pathogen. Incubation period (IP) is defined as the time elapsed from virus acquisition to onset of symptoms in humans. Estimating the duration of IP in humans is not straightforward for vector-borne diseases because date of infection through the bite of an infectious vector cannot usually be determined. We will exploit here declared travel and symptom dates of travelers entering or leaving areas with ongoing virus transmission.
+This code was used for the paper &amp;ldquo;Variability of Zika Virus Incubation Period in Humans&amp;rdquo; (&lt;a href=&#34;https://www.ncbi.nlm.nih.gov/pubmed/30397624&#34; target=&#34;_blank&#34;&gt;https://www.ncbi.nlm.nih.gov/pubmed/30397624&lt;/a&gt;). For data confidentiality purpose, we are going to use here a fake dataset.&lt;/p&gt;
+
+&lt;h2 id=&#34;load-packages&#34;&gt;Load packages&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r,&#34;&gt;library(survival)
+library(plyr)
+library(ggplot2)
+library(lubridate)
+library(interval)
+library(icenReg)
+library(survminer)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;load-data-set&#34;&gt;Load data set&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r,&#34;&gt;
+data &amp;lt;- read.table(file = &amp;quot;Data_IP_fake.txt&amp;quot;, h=T)
+head(data)
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Improved reference genome of Aedes aegypti informs arbovirus vector control</title>
+      <link>/publication/nature/</link>
+      <pubDate>Wed, 14 Nov 2018 00:00:00 +0100</pubDate>
+      
+      <guid>/publication/nature/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Variability of Zika virus incubation period in humans</title>
       <link>/publication/zikv_incubation/</link>
       <pubDate>Tue, 09 Oct 2018 00:00:00 +0200</pubDate>
@@ -21,22 +242,12 @@
     </item>
     
     <item>
-      <title>Example Page</title>
-      <link>/tutorial/example/</link>
-      <pubDate>Sun, 09 Sep 2018 00:00:00 +0200</pubDate>
+      <title>Epidemiological significance of dengue virus genetic variation in mosquito infection dynamics</title>
+      <link>/publication/plospath_epidemiological_sign/</link>
+      <pubDate>Fri, 13 Jul 2018 00:00:00 +0200</pubDate>
       
-      <guid>/tutorial/example/</guid>
-      <description>
-
-&lt;p&gt;In this tutorial, I&amp;rsquo;ll share my top 10 tips for getting started with Academic:&lt;/p&gt;
-
-&lt;h2 id=&#34;tip-1&#34;&gt;Tip 1&lt;/h2&gt;
-
-&lt;p&gt;&amp;hellip;&lt;/p&gt;
-
-&lt;h2 id=&#34;tip-2&#34;&gt;Tip 2&lt;/h2&gt;
-
-&lt;p&gt;&amp;hellip;&lt;/p&gt;
+      <guid>/publication/plospath_epidemiological_sign/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
     </item>
     
@@ -47,6 +258,16 @@
       
       <guid>/privacy/</guid>
       <description>&lt;p&gt;&amp;hellip;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Extensive Genetic Differentiation between Homomorphic Sex Chromosomes in the Mosquito Vector, Aedes aegypti</title>
+      <link>/publication/gbe_extensive/</link>
+      <pubDate>Fri, 01 Sep 2017 00:00:00 +0200</pubDate>
+      
+      <guid>/publication/gbe_extensive/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
     </item>
     
@@ -71,6 +292,16 @@
 &lt;/ul&gt;
 
 &lt;p&gt;Further talk details can easily be added to this page using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Excretion of dengue virus RNA by Aedes aegypti allows non-destructive monitoring of viral dissemination in individual mosquitoes</title>
+      <link>/publication/excretion_denv/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0200</pubDate>
+      
+      <guid>/publication/excretion_denv/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
     </item>
     
@@ -102,425 +333,22 @@
     </item>
     
     <item>
-      <title>Academic: the website designer for Hugo</title>
-      <link>/post/getting-started/</link>
-      <pubDate>Wed, 20 Apr 2016 00:00:00 +0200</pubDate>
-      
-      <guid>/post/getting-started/</guid>
-      <description>
-
-&lt;p&gt;&lt;strong&gt;Academic&lt;/strong&gt; makes it easy to create a beautiful website for free using Markdown. Customize anything on your site with widgets, themes, and language packs.&lt;/p&gt;
-
-&lt;p&gt;Follow our easy &lt;a href=&#34;https://sourcethemes.com/academic/docs/install/&#34; target=&#34;_blank&#34;&gt;step by step guide&lt;/a&gt; to learn how to build your own free website with Academic. &lt;a href=&#34;https://themes.gohugo.io/theme/academic/&#34; target=&#34;_blank&#34;&gt;Check out the personal demo&lt;/a&gt; or the &lt;a href=&#34;https://sourcethemes.com/academic/&#34; target=&#34;_blank&#34;&gt;business demo&lt;/a&gt; of what you&amp;rsquo;ll get in less than 10 minutes.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://sourcethemes.com/academic/docs/&#34; target=&#34;_blank&#34;&gt;View the documentation&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://discuss.gohugo.io/&#34; target=&#34;_blank&#34;&gt;Ask a question&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/gcushen/hugo-academic/issues&#34; target=&#34;_blank&#34;&gt;Request a feature or report a bug&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Updating? View the &lt;a href=&#34;https://sourcethemes.com/academic/docs/update/&#34; target=&#34;_blank&#34;&gt;Update Guide&lt;/a&gt; and &lt;a href=&#34;https://sourcethemes.com/academic/updates/&#34; target=&#34;_blank&#34;&gt;Release Notes&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Support development of Academic:
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://paypal.me/cushen&#34; target=&#34;_blank&#34;&gt;Donate a coffee&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.patreon.com/cushen&#34; target=&#34;_blank&#34;&gt;Become a backer on Patreon&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.redbubble.com/people/neutreno/works/34387919-academic&#34; target=&#34;_blank&#34;&gt;Decorate your laptop or journal with an Academic sticker&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://academic.threadless.com/&#34; target=&#34;_blank&#34;&gt;Wear the T-shirt&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://github.com/gcushen/hugo-academic/&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://raw.githubusercontent.com/gcushen/hugo-academic/master/academic.png&#34; alt=&#34;Screenshot&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Key features:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Easily manage various content including homepage, blog posts, publications, talks, and projects&lt;/li&gt;
-&lt;li&gt;Extensible via &lt;strong&gt;color themes&lt;/strong&gt; and &lt;strong&gt;widgets/plugins&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;Write in &lt;a href=&#34;https://sourcethemes.com/academic/docs/writing-markdown-latex/&#34; target=&#34;_blank&#34;&gt;Markdown&lt;/a&gt; for easy formatting and code highlighting, with &lt;a href=&#34;https://en.wikibooks.org/wiki/LaTeX/Mathematics&#34; target=&#34;_blank&#34;&gt;LaTeX&lt;/a&gt; for mathematical expressions&lt;/li&gt;
-&lt;li&gt;Social/academic network linking, &lt;a href=&#34;https://analytics.google.com&#34; target=&#34;_blank&#34;&gt;Google Analytics&lt;/a&gt;, and &lt;a href=&#34;https://disqus.com&#34; target=&#34;_blank&#34;&gt;Disqus&lt;/a&gt; comments&lt;/li&gt;
-&lt;li&gt;Responsive and mobile friendly&lt;/li&gt;
-&lt;li&gt;Simple and refreshing one page design&lt;/li&gt;
-&lt;li&gt;Multilingual and easy to customize&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;color-themes&#34;&gt;Color Themes&lt;/h2&gt;
-
-&lt;p&gt;Academic is available in different color themes and font themes.&lt;/p&gt;
-
-
-
-&lt;div class=&#34;gallery&#34;&gt;
-
-  
-  
-  
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-1950s.png&#34; data-caption=&#34;1950s&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-1950s.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-apogee.png&#34; data-caption=&#34;Apogee&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-apogee.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-coffee-playfair.png&#34; data-caption=&#34;Coffee theme with Playfair font&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-coffee-playfair.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-cupcake.png&#34; data-caption=&#34;Cupcake&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-cupcake.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-dark.png&#34; data-caption=&#34;Dark&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-dark.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-default.png&#34; data-caption=&#34;Default&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-default.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-forest.png&#34; data-caption=&#34;Forest&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-forest.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-    
-    
-    
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-    
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;/post/getting-started/gallery/theme-ocean.png&#34; data-caption=&#34;Ocean&#34;&gt;
-  &lt;img src=&#34;/post/getting-started/gallery/theme-ocean.png&#34; alt=&#34;&#34;&gt;
-  &lt;/a&gt;
-  
-
-  
-&lt;/div&gt;
-
-&lt;h2 id=&#34;ecosystem&#34;&gt;Ecosystem&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://github.com/sourcethemes/academic-admin&#34; target=&#34;_blank&#34;&gt;Academic Admin&lt;/a&gt;:&lt;/strong&gt; An admin tool to import publications from BibTeX or import assets for an offline site&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://github.com/sourcethemes/academic-scripts&#34; target=&#34;_blank&#34;&gt;Academic Scripts&lt;/a&gt;:&lt;/strong&gt; Scripts to help migrate content to new versions of Academic&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;install&#34;&gt;Install&lt;/h2&gt;
-
-&lt;p&gt;You can choose from one of the following four methods to install:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;one-click install using your web browser (recommended)&lt;/li&gt;
-&lt;li&gt;install on your computer using Git with the Command Prompt/Terminal app&lt;/li&gt;
-&lt;li&gt;install on your computer by downloading the ZIP files&lt;/li&gt;
-&lt;li&gt;install on your computer with RStudio&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&#34;quick-install-using-your-web-browser&#34;&gt;Quick install using your web browser&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://app.netlify.com/start/deploy?repository=https://github.com/sourcethemes/academic-kickstart&#34; target=&#34;_blank&#34;&gt;Install Academic with Netlify&lt;/a&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Netlify will provide you with a customizable URL to access your new site&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;On GitHub, go to your newly created &lt;code&gt;academic-kickstart&lt;/code&gt; repository and edit &lt;code&gt;config.toml&lt;/code&gt; to personalize your site. Shortly after saving the file, your site will automatically update&lt;/li&gt;
-&lt;li&gt;Read the &lt;a href=&#34;https://sourcethemes.com/academic/docs/&#34; target=&#34;_blank&#34;&gt;Quick Start Guide&lt;/a&gt; to learn how to add Markdown content. For inspiration, refer to the &lt;a href=&#34;https://github.com/gcushen/hugo-academic/tree/master/exampleSite&#34; target=&#34;_blank&#34;&gt;Markdown content&lt;/a&gt; which powers the &lt;a href=&#34;https://themes.gohugo.io/theme/academic/&#34; target=&#34;_blank&#34;&gt;Demo&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;install-with-git&#34;&gt;Install with Git&lt;/h3&gt;
-
-&lt;p&gt;Prerequisites:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://git-scm.com/downloads&#34; target=&#34;_blank&#34;&gt;Download and install Git&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://gohugo.io/getting-started/installing/#quick-install&#34; target=&#34;_blank&#34;&gt;Download and install Hugo&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/sourcethemes/academic-kickstart#fork-destination-box&#34; target=&#34;_blank&#34;&gt;Fork&lt;/a&gt; the &lt;em&gt;Academic Kickstart&lt;/em&gt; repository and clone your fork with Git:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;git clone https://github.com/sourcethemes/academic-kickstart.git My_Website
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;em&gt;Note that if you forked Academic Kickstart, the above command should be edited to clone your fork, i.e. replace &lt;code&gt;sourcethemes&lt;/code&gt; with your GitHub username.&lt;/em&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Initialize the theme:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;cd My_Website
-git submodule update --init --recursive
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;install-with-zip&#34;&gt;Install with ZIP&lt;/h3&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/sourcethemes/academic-kickstart/archive/master.zip&#34; target=&#34;_blank&#34;&gt;Download&lt;/a&gt; and extract &lt;em&gt;Academic Kickstart&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/gcushen/hugo-academic/archive/master.zip&#34; target=&#34;_blank&#34;&gt;Download&lt;/a&gt; and extract the &lt;em&gt;Academic theme&lt;/em&gt; to the &lt;code&gt;themes/academic/&lt;/code&gt; folder from the above step&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&#34;install-with-rstudio&#34;&gt;Install with RStudio&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://sourcethemes.com/academic/docs/install/#install-with-rstudio&#34; target=&#34;_blank&#34;&gt;View the guide to installing Academic with RStudio&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;quick-start&#34;&gt;Quick start&lt;/h2&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;If you installed on your computer, view your new website by running the following command:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;hugo server
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Now visit &lt;a href=&#34;http://localhost:1313&#34; target=&#34;_blank&#34;&gt;localhost:1313&lt;/a&gt; and your new Academic powered website will appear. Otherwise, if using Netlify, they will provide you with your URL.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Read the &lt;a href=&#34;https://sourcethemes.com/academic/docs/&#34; target=&#34;_blank&#34;&gt;Quick Start Guide&lt;/a&gt; to learn how to add Markdown content, customize your site, and deploy it. For inspiration, refer to the &lt;a href=&#34;https://github.com/gcushen/hugo-academic/tree/master/exampleSite&#34; target=&#34;_blank&#34;&gt;Markdown content&lt;/a&gt; which powers the &lt;a href=&#34;https://themes.gohugo.io/theme/academic/&#34; target=&#34;_blank&#34;&gt;Demo&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Build your site by running the &lt;code&gt;hugo&lt;/code&gt; command. Then &lt;a href=&#34;https://georgecushen.com/create-your-website-with-hugo/&#34; target=&#34;_blank&#34;&gt;host it for free using Github Pages&lt;/a&gt; or Netlify (refer to the first installation method). Alternatively, copy the generated &lt;code&gt;public/&lt;/code&gt; directory (by FTP, Rsync, etc.) to your production web server (such as a university&amp;rsquo;s hosting service).&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;updating&#34;&gt;Updating&lt;/h2&gt;
-
-&lt;p&gt;Feel free to &lt;em&gt;star&lt;/em&gt; the project on &lt;a href=&#34;https://github.com/gcushen/hugo-academic/&#34; target=&#34;_blank&#34;&gt;Github&lt;/a&gt; to help keep track of updates and check out the &lt;a href=&#34;https://sourcethemes.com/academic/updates&#34; target=&#34;_blank&#34;&gt;release notes&lt;/a&gt; prior to updating your site.&lt;/p&gt;
-
-&lt;p&gt;Before updating the framework, it is recommended to make a backup of your entire website directory (or at least your &lt;code&gt;themes/academic&lt;/code&gt; directory) and record your current version number.&lt;/p&gt;
-
-&lt;p&gt;By default, Academic is installed as a Git submodule which can be updated by running the following command:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;git submodule update --remote --merge
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://sourcethemes.com/academic/docs/update/&#34; target=&#34;_blank&#34;&gt;Check out the update guide&lt;/a&gt; for full instructions and alternative methods.&lt;/p&gt;
-
-&lt;h2 id=&#34;feedback-contributing&#34;&gt;Feedback &amp;amp; Contributing&lt;/h2&gt;
-
-&lt;p&gt;Please use the &lt;a href=&#34;https://github.com/gcushen/hugo-academic/issues&#34; target=&#34;_blank&#34;&gt;issue tracker&lt;/a&gt; to let me know about any bugs or feature requests, or alternatively make a pull request.&lt;/p&gt;
-
-&lt;p&gt;For support, head over to the &lt;a href=&#34;http://discuss.gohugo.io&#34; target=&#34;_blank&#34;&gt;Hugo discussion forum&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;license&#34;&gt;License&lt;/h2&gt;
-
-&lt;p&gt;Copyright 2016-present &lt;a href=&#34;https://georgecushen.com&#34; target=&#34;_blank&#34;&gt;George Cushen&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Released under the &lt;a href=&#34;https://github.com/gcushen/hugo-academic/blob/master/LICENSE.md&#34; target=&#34;_blank&#34;&gt;MIT&lt;/a&gt; license.&lt;/p&gt;
+      <title>Genetic mapping of specific interactions between Aedes aegypti mosquitoes and dengue viruses</title>
+      <link>/publication/genetic_mapping_plosgen/</link>
+      <pubDate>Thu, 01 Aug 2013 00:00:00 +0200</pubDate>
+      
+      <guid>/publication/genetic_mapping_plosgen/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/post/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>Implication of haematophagous arthropod salivary proteins in host-vector interactions</title>
+      <link>/publication/pv_review/</link>
+      <pubDate>Thu, 01 Dec 2011 00:00:00 +0100</pubDate>
       
-      <guid>/post/2015-07-23-r-rmarkdown/</guid>
-      <description>
-
-
-&lt;div id=&#34;r-markdown&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;R Markdown&lt;/h1&gt;
-&lt;p&gt;This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see &lt;a href=&#34;http://rmarkdown.rstudio.com&#34; class=&#34;uri&#34;&gt;http://rmarkdown.rstudio.com&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;You can embed an R code chunk like this:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(cars)
-##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00
-fit &amp;lt;- lm(dist ~ speed, data = cars)
-fit
-## 
-## Call:
-## lm(formula = dist ~ speed, data = cars)
-## 
-## Coefficients:
-## (Intercept)        speed  
-##     -17.579        3.932&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;including-plots&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Including Plots&lt;/h1&gt;
-&lt;p&gt;You can also embed plots. See Figure &lt;a href=&#34;#fig:pie&#34;&gt;1&lt;/a&gt; for example:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;par(mar = c(0, 1, 0, 1))
-pie(
-  c(280, 60, 20),
-  c(&amp;#39;Sky&amp;#39;, &amp;#39;Sunny side of pyramid&amp;#39;, &amp;#39;Shady side of pyramid&amp;#39;),
-  col = c(&amp;#39;#0292D8&amp;#39;, &amp;#39;#F7EA39&amp;#39;, &amp;#39;#C4B632&amp;#39;),
-  init.angle = -50, border = NA
-)&lt;/code&gt;&lt;/pre&gt;
-&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:pie&#34;&gt;&lt;/span&gt;
-&lt;img src=&#34;/post/2015-07-23-r-rmarkdown_files/figure-html/pie-1.png&#34; alt=&#34;A fancy pie chart.&#34; width=&#34;672&#34; /&gt;
-&lt;p class=&#34;caption&#34;&gt;
-Figure 1: A fancy pie chart.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+      <guid>/publication/pv_review/</guid>
+      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
     </item>
     

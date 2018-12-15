@@ -33,8 +33,11 @@ weight = 5
 
 +++
 
-Welcome to my professional website. I am always finding difficult to explain what my job is.  A simple definition would be that I am a medical entomologist studying vector-borne diseases. But the truth is that I can hardly identify directly more than 3 mosquito species, which is not fitting well with the entomologist definition. I am not even more a statistician, a programmer, a geneticist, a virologist nor a data analyst...but I see myself like a blend made of a very little of these.
+Welcome to my professional website.
 
-One of my main professional interest is to elucidate if a trait related to vector-borne diseases has a genetic basis, and if it does, discover the genetic factors underlying it.  My second main professional interest relates to the study of the dynamic of the interactions between mosquito-borne pathogens and their hosts. The time-related phenotypes in vector-borne disease are largely overlooked in studies, mainly because of technical or ethical constraints. However, time is one of the most influential components of vector competence and vector-borne disease outbreak dynamic on the field. I am of course open to explore within and beyond these frontiers through collaborations.
+My professional interests concern vector-borne diseases. More specifically, I am studying dynamic traits related to mosquito vectors biology and interaction dynamics between mosquito-borne pathogens and their hosts. My studies include the estimation of extrinsic and intrinsic incubation period distributions and how they influence vector competence and vector-borne disease outbreak in the field.  
 
-A major turnover in my young scientist career was to learn how to code in the R environment. R brought my science abilities to a next level and allowed me to be transversal. It allows me to deal with huge data sets, perform simple and hard-core statistic tests, visualize complex data, create maps, ... without knowing anything else than applying a very well documented R package or R tutorial. Hey! It also allows me to create a website so easily thanks to the Rblogdown (https://bookdown.org/yihui/blogdown/) package without any background. I am infinitely grateful to all members of the R community that have helped R to become what it is today through numerous open-source packages, dedicated tutorials or blogs. Through my “behind the paper tutorials”, I aim to bring my modest contribution by sharing some of my code.
+My other interest is to elucidate if a trait related to vector-borne diseases has a genetic basis, and if it does, discover the genetic factors underlying it. 
+
+I am open to explore within and beyond these frontiers through collaborations :smiley: :rocket:
+
